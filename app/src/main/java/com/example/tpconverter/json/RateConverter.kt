@@ -16,7 +16,6 @@ object RateConverter {
             data,
             ApiRateList::class.java
         )
-        Log.d("rates : ", result.toString())
         return result
 
     }

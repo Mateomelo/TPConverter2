@@ -33,13 +33,11 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this)[HomeViewModel::class.java]
+        ViewModelProvider(this)[HomeViewModel::class.java]
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val rateList: RecyclerView = binding.rateRecyclerView
 /*        val ratesString = getRates()
         val currenciesString = getCurrencies()
 
@@ -49,8 +47,7 @@ class HomeFragment : Fragment() {
         displayRates()
 
 
-        rateList.adapter = RateAdapter(requireContext(), MergeApi.merge(convertRates, convertCurrencies))
-        rateList.layoutManager=LinearLayoutManager(requireContext())
+
 
 
         return root
@@ -63,6 +60,9 @@ class HomeFragment : Fragment() {
 
 
     private fun displayRates() = runBlocking {
+
+        val rateList: RecyclerView = binding.rateRecyclerView
+
         val rates = withContext(Dispatchers.IO) {
             HttpUtil.readUrl(AppConfig.API_RATES)
         }
@@ -72,7 +72,11 @@ class HomeFragment : Fragment() {
         val convertRates = RateConverter.convertRates(rates)
         val convertCurrencies = CurrencyConverter.convertCurrencies(currencies)
 
+        rateList.adapter = RateAdapter(requireContext(), MergeApi.merge(convertRates, convertCurrencies))
+        rateList.layoutManager=LinearLayoutManager(requireContext())
+
     }
+    /*
     private fun getRates(): String {
         return IoUtil.readTextFile(
             requireContext(),
@@ -85,5 +89,5 @@ class HomeFragment : Fragment() {
             requireContext(),
             "data/currencies.json"
         )
-    }
+    }*/
 }

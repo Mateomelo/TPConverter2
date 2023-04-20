@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
-
+apply plugin: 'kotlin-kapt'
 android {
     namespace 'com.example.tpconverter'
     compileSdk 33
@@ -54,4 +54,9 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.14+"
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14'
 
+    // Room
+    def room_version = "2.4.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 }

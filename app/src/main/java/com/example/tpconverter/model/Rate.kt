@@ -1,14 +1,23 @@
+package com.example.tpconverter.model
+
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "rates")
 class Rate(
-    @PrimaryKey val id: Int,
-    @ColumnInfo(name = "code") val code: String,
-    @ColumnInfo(name = "label") val label: String,
-    @ColumnInfo(name = "value") val value: Double,
-    @ColumnInfo(name = "flag") val flag: String
-) {
-    // vous pouvez également ajouter des méthodes ici si nécessaire
-}
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0,
+
+    @ColumnInfo(name = "currency_code")
+    var code: String = "",
+
+    @ColumnInfo(name = "currency_label")
+    var label: String = "",
+
+    @ColumnInfo(name = "currency_value")
+    var value: Double = 0.0,
+
+    @ColumnInfo(name = "currency_flag")
+    var flag: String = ""
+)

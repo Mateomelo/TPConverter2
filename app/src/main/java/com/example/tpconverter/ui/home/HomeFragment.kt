@@ -1,6 +1,7 @@
 package com.example.tpconverter.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +13,10 @@ import com.example.tpconverter.adapter.RateAdapter
 import com.example.tpconverter.configuration.AppConfig
 import com.example.tpconverter.databinding.FragmentHomeBinding
 import com.example.tpconverter.httputil.HttpUtil
-import com.example.tpconverter.io.IoUtil
 import com.example.tpconverter.json.CurrencyConverter
 import com.example.tpconverter.json.RateConverter
-import com.example.tpconverter.model.MergeApi
+import com.example.tpconverter.json.MergeConverter
+import com.example.tpconverter.model.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -46,10 +47,6 @@ class HomeFragment : Fragment() {
 
         displayRates()
 
-
-
-
-
         return root
     }
 
@@ -63,18 +60,36 @@ class HomeFragment : Fragment() {
 
         val rateList: RecyclerView = binding.rateRecyclerView
 
-        val rates = withContext(Dispatchers.IO) {
-            HttpUtil.readUrl(AppConfig.API_RATES)
-        }
-        val currencies = withContext(Dispatchers.IO) {
-            HttpUtil.readUrl(AppConfig.API_CURRENCIES)
-        }
-        val convertRates = RateConverter.convertRates(rates)
-        val convertCurrencies = CurrencyConverter.convertCurrencies(currencies)
+        val db = AppDatabase.getInstance(requireContext())
 
-        rateList.adapter = RateAdapter(requireContext(), MergeApi.merge(convertRates, convertCurrencies))
+        // Check if database is empty
+        if (db.rateDao().getRates().isEmpty()) {
+            // Fetch rates and currencies from API
+            val rates = withContext(Dispatchers.IO) {
+                HttpUtil.readUrl(AppConfig.API_RATES)
+            }
+            val currencies = withContext(Dispatchers.IO) {
+                HttpUtil.readUrl(AppConfig.API_CURRENCIES)
+            }
+
+            // Convert rates and currencies
+            val convertRates = RateConverter.convertRates(rates)
+            val convertCurrencies = CurrencyConverter.convertCurrencies(currencies)
+
+            withContext(Dispatchers.IO) {
+                var ratesToDb = MergeConverter.merge(convertRates, convertCurrencies)
+                Log.d(" rates : ", ratesToDb.toString())
+                // Merge rates and currencies and insert into database
+                db.rateDao().insertAll(ratesToDb)
+
+            }
+
+        }
+
+        // Load rates from database and display them
+         val ratesFromDb = db.rateDao().getRates()
+         rateList.adapter = RateAdapter(requireContext(), ratesFromDb)
         rateList.layoutManager=LinearLayoutManager(requireContext())
-
     }
     /*
     private fun getRates(): String {

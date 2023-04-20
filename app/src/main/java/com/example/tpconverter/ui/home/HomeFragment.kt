@@ -56,14 +56,16 @@ class HomeFragment : Fragment() {
     }
 
 
-    private fun displayRates() = runBlocking {
+    fun displayRates() = runBlocking {
 
         val rateList: RecyclerView = binding.rateRecyclerView
 
         val db = AppDatabase.getInstance(requireContext())
 
-        // Check if database is empty
-        if (db.rateDao().getRates().isEmpty()) {
+        // Load rates from database and display them
+        val ratesFromDb = db.rateDao().getRates()
+
+        if (ratesFromDb.isEmpty()) {
             // Fetch rates and currencies from API
             val rates = withContext(Dispatchers.IO) {
                 HttpUtil.readUrl(AppConfig.API_RATES)
@@ -81,28 +83,31 @@ class HomeFragment : Fragment() {
                 Log.d(" rates : ", ratesToDb.toString())
                 // Merge rates and currencies and insert into database
                 db.rateDao().insertAll(ratesToDb)
-
             }
 
+            // Load rates from database again
+            val ratesFromDbAgain = db.rateDao().getRates()
+            rateList.adapter = RateAdapter(requireContext(), ratesFromDbAgain)
+        } else {
+            // Display rates from database
+            rateList.adapter = RateAdapter(requireContext(), ratesFromDb)
         }
 
-        // Load rates from database and display them
-         val ratesFromDb = db.rateDao().getRates()
-         rateList.adapter = RateAdapter(requireContext(), ratesFromDb)
-        rateList.layoutManager=LinearLayoutManager(requireContext())
-    }
-    /*
-    private fun getRates(): String {
-        return IoUtil.readTextFile(
-            requireContext(),
-            "data/rates.json"
-        )
+        rateList.layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun getCurrencies(): String {
-        return IoUtil.readTextFile(
-            requireContext(),
-            "data/currencies.json"
-        )
-    }*/
 }
+/*
+private fun getRates(): String {
+    return IoUtil.readTextFile(
+        requireContext(),
+        "data/rates.json"
+    )
+}
+
+private fun getCurrencies(): String {
+    return IoUtil.readTextFile(
+        requireContext(),
+        "data/currencies.json"
+    )
+}*/
